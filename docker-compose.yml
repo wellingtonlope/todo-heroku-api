@@ -15,6 +15,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DATABASE=postgres
+      - POSTGRES_SSL=disable
     ports:
       - "1323:1323"
     depends_on:

@@ -26,12 +26,13 @@ type DatabaseConfig struct {
 	Password string
 	DBName   string
 	Schema   string
+	SSL      string
 }
 
 func NewTodo(dbConfig DatabaseConfig) (repository.Todo, error) {
 	conn, err := sqlx.Open("postgres", fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbConfig.Host, dbConfig.Port, dbConfig.User,
-		dbConfig.Password, dbConfig.DBName,
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", dbConfig.Host, dbConfig.Port, dbConfig.User,
+		dbConfig.Password, dbConfig.DBName, dbConfig.SSL,
 	))
 	if err != nil {
 		return nil, err

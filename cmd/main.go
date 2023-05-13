@@ -44,6 +44,7 @@ func getRepository() repository.Todo {
 			User:     os.Getenv("POSTGRES_USER"),
 			Password: os.Getenv("POSTGRES_PASSWORD"),
 			DBName:   os.Getenv("POSTGRES_DATABASE"),
+			SSL:      os.Getenv("POSTGRES_SSL"),
 		})
 		if err != nil {
 			log.Fatalf("Error loading postgres: %v", err)
