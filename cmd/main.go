@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/wellingtonlope/todo-heroku-api/internal/app/repository"
 	"github.com/wellingtonlope/todo-heroku-api/internal/app/usecase"
 	http2 "github.com/wellingtonlope/todo-heroku-api/internal/infra/http"
 	"github.com/wellingtonlope/todo-heroku-api/internal/infra/memory"
+	"github.com/wellingtonlope/todo-heroku-api/internal/infra/postgres"
 	"log"
 	"os"
-	"time"
 )
 
 func main() {
@@ -20,24 +20,9 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("todo-api-stage"),
-		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
-		newrelic.ConfigAppLogForwardingEnabled(true),
-	)
-	if err != nil {
-		log.Fatalf("Error loading new relic file: %v", err)
-	}
-	app.RecordLog(newrelic.LogData{Message: "teste", Severity: "error"})
-	app.RecordCustomEvent("just_a_test", map[string]interface{}{"name": "test"})
-	trs := app.StartTransaction("a_transaction")
-	time.Sleep(time.Second)
-	trs.End()
-	app.RecordCustomMetric("just_a_metric", 1.2)
-
-	memoryRepository := memory.NewTodo()
-	createTodo := usecase.NewCreateTodo(memoryRepository)
-	getAllTodo := usecase.NewGetAllTodo(memoryRepository)
+	todoRepository := getRepository()
+	createTodo := usecase.NewCreateTodo(todoRepository)
+	getAllTodo := usecase.NewGetAllTodo(todoRepository)
 	controller := http2.NewTodo(createTodo, getAllTodo)
 
 	e.POST("/todos", controller.Create)
@@ -48,4 +33,23 @@ func main() {
 
 func shouldReadEnvFile() bool {
 	return os.Getenv("APP_ENV") == "local" || os.Getenv("APP_ENV") == ""
+}
+
+func getRepository() repository.Todo {
+	source := os.Getenv("DATABASE_SOURCE")
+	if source == "postgres" {
+		postgresRepository, err := postgres.NewTodo(postgres.DatabaseConfig{
+			Host:     os.Getenv("POSTGRES_HOST"),
+			Port:     os.Getenv("POSTGRES_PORT"),
+			User:     os.Getenv("POSTGRES_USER"),
+			Password: os.Getenv("POSTGRES_PASSWORD"),
+			DBName:   os.Getenv("POSTGRES_DATABASE"),
+		})
+		if err != nil {
+			log.Fatalf("Error loading postgres: %v", err)
+		}
+		return postgresRepository
+	}
+
+	return memory.NewTodo()
 }

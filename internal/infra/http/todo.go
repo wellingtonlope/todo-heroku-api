@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"github.com/wellingtonlope/todo-heroku-api/internal/app/usecase"
 	"net/http"
 )
@@ -41,6 +42,7 @@ func (ctr *todo) Create(c echo.Context) error {
 		Description: todoInput.Description,
 	})
 	if err != nil {
+		log.Error("[func:GetAll] %v", err)
 		return err
 	}
 	return c.JSON(http.StatusCreated, TodoOutput{
@@ -53,6 +55,7 @@ func (ctr *todo) Create(c echo.Context) error {
 func (ctr *todo) GetAll(c echo.Context) error {
 	todoOutputs, err := ctr.getAllUC.Handle()
 	if err != nil {
+		log.Error("[func:GetAll] %v", err)
 		return err
 	}
 
