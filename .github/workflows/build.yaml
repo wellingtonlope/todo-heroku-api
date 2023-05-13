@@ -44,10 +44,10 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:push -a todo-api-stage web
       - name: Develop branch
-        if: "contains(github.ref_name, 'develop'"
+        if: "contains(github.ref_name, 'develop')"
         run: echo "HEROKU_ENV=stage" >> $GITHUB_ENV
       - name: Develop branch
-        if: "contains(github.ref_name, 'main'"
+        if: "contains(github.ref_name, 'main')"
         run: echo "HEROKU_ENV=production" >> $GITHUB_ENV
       - name: Release
         env:
