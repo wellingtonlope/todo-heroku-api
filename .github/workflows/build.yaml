@@ -54,12 +54,9 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:login
-      - name: Develop branch
-        if: "contains(github.ref_name, 'develop')"
-        run: echo "HEROKU_ENV=stage" >> $GITHUB_ENV
-      - name: Develop branch
+      - name: Stage branch
         if: "contains(github.ref_name, 'main')"
-        run: echo "HEROKU_ENV=production" >> $GITHUB_ENV
+        run: echo "HEROKU_ENV=stage" >> $GITHUB_ENV
       - name: Build and push
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
