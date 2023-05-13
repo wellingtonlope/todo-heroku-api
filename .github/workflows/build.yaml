@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  Test:
+  Audit:
     name: Unit Test
     strategy:
       matrix:
@@ -16,13 +16,34 @@ jobs:
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Install Go
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: Run staticcheck
+        run: staticcheck ./...
+
+      - name: Install golint
+        run: go install golang.org/x/lint/golint@latest
+
+      - name: Run golint
+        run: golint ./...
 
       - name: Run Test
         run: |
@@ -39,16 +60,16 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:login
-      - name: Build and push
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a todo-api-stage web
       - name: Develop branch
         if: "contains(github.ref_name, 'develop')"
         run: echo "HEROKU_ENV=stage" >> $GITHUB_ENV
       - name: Develop branch
         if: "contains(github.ref_name, 'main')"
         run: echo "HEROKU_ENV=production" >> $GITHUB_ENV
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:push -a todo-api-${{ env.HEROKU_ENV }} web
       - name: Release
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
