@@ -42,7 +42,7 @@ func (ctr *todo) Create(c echo.Context) error {
 		Description: todoInput.Description,
 	})
 	if err != nil {
-		log.Error("[func:GetAll] %v", err)
+		log.Errorf("[func:GetAll] %v", err)
 		return err
 	}
 	return c.JSON(http.StatusCreated, TodoOutput{
@@ -55,7 +55,7 @@ func (ctr *todo) Create(c echo.Context) error {
 func (ctr *todo) GetAll(c echo.Context) error {
 	todoOutputs, err := ctr.getAllUC.Handle()
 	if err != nil {
-		log.Error("[func:GetAll] %v", err)
+		log.Errorf("[func:GetAll] %v", err)
 		return err
 	}
 
